@@ -14,6 +14,7 @@ public class Group : MonoBehaviour
     void Start()
     {
         _targetPos = transform.position;
+        _targetRot = transform.rotation;
     }
 
     void Update()
@@ -25,19 +26,19 @@ public class Group : MonoBehaviour
         }
         else if (Input.GetKeyDown(KeyCode.LeftArrow))
         {
-            _targetRot.eulerAngles += new Vector3(0, -90, 0);
+            _targetRot *= Quaternion.Euler(Vector3.left * 90);
         }
         else if (Input.GetKeyDown(KeyCode.RightArrow))
         {
-            _targetRot.eulerAngles += new Vector3(0, +90, 0);
+            _targetRot *= Quaternion.Euler(Vector3.left * -90);
         }
         else if (Input.GetKeyDown(KeyCode.DownArrow))
         {
-            _targetRot.eulerAngles += new Vector3(+90, 0, 0);
+            _targetRot *= Quaternion.Euler(Vector3.forward * -90);
         }
         else if (Input.GetKeyDown(KeyCode.UpArrow))
         {
-            _targetRot.eulerAngles += new Vector3(-90, 0, 0);
+            _targetRot *= Quaternion.Euler(Vector3.forward * 90);
         }
 
         transform.position = Vector3.Lerp(transform.position, _targetPos, LERP_SPEED);
