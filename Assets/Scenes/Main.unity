@@ -304,8 +304,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   groups:
-  - {fileID: 1621464496864352, guid: 6837c46ce8ea13e45ae5ca59f33f6b2a, type: 2}
   - {fileID: 1406018510198724, guid: 7f229dd40f98fb1499a9fe5e2cff2549, type: 2}
+  - {fileID: 1621464496864352, guid: 6837c46ce8ea13e45ae5ca59f33f6b2a, type: 2}
 --- !u!4 &439788742
 Transform:
   m_ObjectHideFlags: 0
