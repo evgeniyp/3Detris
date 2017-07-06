@@ -2,7 +2,7 @@
 
 public class Group : MonoBehaviour
 {
-    private const float GAME_TICK_SECONDS = 0.2f;
+    private const float GAME_TICK_SECONDS = 1f;
     private const float LERP_SPEED = 0.2f;
 
     private bool _drivenByPlayer = true;
@@ -69,65 +69,73 @@ public class Group : MonoBehaviour
         }
         else
         {
-            if (Time.time - _lastFall >= GAME_TICK_SECONDS)
+            if (Time.time - _lastFall >= GAME_TICK_SECONDS || Input.GetKeyDown(KeyCode.Space))
             {
-                _real.transform.position += new Vector3(0, -1, 0);
-                if (IsValidGridPos())
-                {
-                    UpdateGrid();
-                }
+                if (TryMove(new Vector3(0, -1, 0))) { }
                 else
                 {
-                    _real.transform.position += new Vector3(0, 1, 0);
                     FindObjectOfType<Spawner>().SpawnNext();
                     _drivenByPlayer = false;
                 }
                 _lastFall = Time.time;
             }
+            else if (Input.GetKeyDown(KeyCode.LeftArrow) && Input.GetKey(KeyCode.LeftAlt))
+                TryRotate(Vector3.forward * 90);
+            else if (Input.GetKeyDown(KeyCode.RightArrow) && Input.GetKey(KeyCode.LeftAlt))
+                TryRotate(Vector3.forward * -90);
+            else if (Input.GetKeyDown(KeyCode.DownArrow) && Input.GetKey(KeyCode.LeftAlt))
+                TryRotate(Vector3.right * -90);
+            else if (Input.GetKeyDown(KeyCode.UpArrow) && Input.GetKey(KeyCode.LeftAlt))
+                TryRotate(Vector3.right * 90);
             else if (Input.GetKeyDown(KeyCode.LeftArrow))
-            {
-                var euler = Vector3.forward * 90;
-
-                _real.transform.rotation *= Quaternion.Euler(euler);
-                if (IsValidGridPos())
-                    UpdateGrid();
-                else
-                    _real.transform.rotation *= Quaternion.Euler(-euler);
-            }
+                TryMove(Vector3.right);
             else if (Input.GetKeyDown(KeyCode.RightArrow))
-            {
-                var euler = Vector3.forward * -90;
-
-                _real.transform.rotation *= Quaternion.Euler(euler);
-                if (IsValidGridPos())
-                    UpdateGrid();
-                else
-                    _real.transform.rotation *= Quaternion.Euler(-euler);
-            }
+                TryMove(-Vector3.right);
             else if (Input.GetKeyDown(KeyCode.DownArrow))
-            {
-                var euler = Vector3.right * -90;
-
-                _real.transform.rotation *= Quaternion.Euler(euler);
-                if (IsValidGridPos())
-                    UpdateGrid();
-                else
-                    _real.transform.rotation *= Quaternion.Euler(-euler);
-            }
+                TryMove(Vector3.forward);
             else if (Input.GetKeyDown(KeyCode.UpArrow))
+                TryMove(-Vector3.forward);
+            else if (Input.GetKeyDown(KeyCode.Return))
             {
-                var euler = Vector3.right * 90;
-
-                _real.transform.rotation *= Quaternion.Euler(euler);
-                if (IsValidGridPos())
-                    UpdateGrid();
-                else
-                    _real.transform.rotation *= Quaternion.Euler(-euler);
+                do
+                { } while (TryMove(new Vector3(0, -1, 0)));
+                FindObjectOfType<Spawner>().SpawnNext();
+                _drivenByPlayer = false;
             }
         }
 
         transform.position = Vector3.Lerp(transform.position, _real.transform.position, LERP_SPEED);
         transform.rotation = Quaternion.Lerp(transform.rotation, _real.transform.rotation, LERP_SPEED);
+    }
+
+    private bool TryRotate(Vector3 eulerRotation)
+    {
+        _real.transform.rotation *= Quaternion.Euler(eulerRotation);
+        if (IsValidGridPos())
+        {
+            UpdateGrid();
+            return true;
+        }
+        else
+        {
+            _real.transform.rotation *= Quaternion.Euler(-eulerRotation);
+            return false;
+        }
+    }
+
+    private bool TryMove(Vector3 deltaPosition)
+    {
+        _real.transform.position += deltaPosition;
+        if (IsValidGridPos())
+        {
+            UpdateGrid();
+            return true;
+        }
+        else
+        {
+            _real.transform.position += -deltaPosition;
+            return false;
+        }
     }
 
     private void UpdateGrid()
