@@ -2,10 +2,11 @@
 
 public class Group : MonoBehaviour
 {
-    private const float GAME_TICK_SECONDS = 1f;
-    private const float LERP_SPEED = 0.2f;
+    public static readonly float LERP_SPEED = 0.2f;
 
-    private bool _drivenByPlayer = true;
+    private const float GAME_TICK_SECONDS = 1f;
+
+    public bool DrivenByPlayer = true;
 
     private float _lastFall = 0;
 
@@ -28,7 +29,12 @@ public class Group : MonoBehaviour
             c.transform.SetParent(_real.transform);
             c.AddComponent<CubeReal>();
             var _realChild = c.GetComponent<CubeReal>();
-            _realChild.DisplayedCube = child.GetComponent<Cube>();
+
+            var cube = child.GetComponent<Cube>();
+            cube.DisplayedGroup = this;
+            _realChild.DisplayedCube = cube;
+            
+            child.GetComponent<Cube>().Real = c.GetComponent<CubeReal>();
         }
 
         if (!IsValidGridPos())
@@ -45,37 +51,43 @@ public class Group : MonoBehaviour
     {
         foreach (Transform child in _real.transform)
         {
-            Vector3 v = Grid.RoundVec3(child.position);
+            Vector3 v = Stack.RoundVec3(child.position);
 
-            if (!Grid.InsideBorder(v))
+            if (!Stack.InsideBorder(v))
                 return false;
 
-            if (Grid.grid[(int)v.x, (int)v.z, (int)v.y] != null)
-                if (Grid.grid[(int)v.x, (int)v.z, (int)v.y].transform.parent != _real.transform)
+            if (Stack.grid[(int)v.x, (int)v.z, (int)v.y] != null)
+                if (Stack.grid[(int)v.x, (int)v.z, (int)v.y].transform.parent != _real.transform)
                     return false;
         }
         return true;
     }
 
+    private void FixedUpdate()
+    {
+        
+    }
+
     void Update()
     {
-        if (!_drivenByPlayer)
+        if (!DrivenByPlayer)
         {
             if (_real.transform.childCount == 0)
             {
-                Destroy(_real.gameObject);
-                Destroy(gameObject);
+                //Destroy(_real.gameObject);
+                //Destroy(gameObject);
             }
         }
         else
         {
-            if (Time.time - _lastFall >= GAME_TICK_SECONDS || Input.GetKeyDown(KeyCode.Space))
+            if (Time.time - _lastFall >= GAME_TICK_SECONDS)
             {
                 if (TryMove(new Vector3(0, -1, 0))) { }
                 else
                 {
+                    Stack.DeleteFullPlanes();
                     FindObjectOfType<Spawner>().SpawnNext();
-                    _drivenByPlayer = false;
+                    DrivenByPlayer = false;
                 }
                 _lastFall = Time.time;
             }
@@ -87,25 +99,26 @@ public class Group : MonoBehaviour
                 TryRotate(Vector3.right * -90);
             else if (Input.GetKeyDown(KeyCode.UpArrow) && Input.GetKey(KeyCode.LeftAlt))
                 TryRotate(Vector3.right * 90);
-            else if (Input.GetKeyDown(KeyCode.LeftArrow))
+            else if (InputEx.GetKeyRepeat(KeyCode.LeftArrow))
                 TryMove(Vector3.right);
-            else if (Input.GetKeyDown(KeyCode.RightArrow))
+            else if (InputEx.GetKeyRepeat(KeyCode.RightArrow))
                 TryMove(-Vector3.right);
-            else if (Input.GetKeyDown(KeyCode.DownArrow))
+            else if (InputEx.GetKeyRepeat(KeyCode.DownArrow))
                 TryMove(Vector3.forward);
-            else if (Input.GetKeyDown(KeyCode.UpArrow))
+            else if (InputEx.GetKeyRepeat(KeyCode.UpArrow))
                 TryMove(-Vector3.forward);
-            else if (Input.GetKeyDown(KeyCode.Return))
+            else if (Input.GetKeyDown(KeyCode.Space))
             {
                 do
                 { } while (TryMove(new Vector3(0, -1, 0)));
+                Stack.DeleteFullPlanes();
                 FindObjectOfType<Spawner>().SpawnNext();
-                _drivenByPlayer = false;
+                DrivenByPlayer = false;
             }
-        }
 
-        transform.position = Vector3.Lerp(transform.position, _real.transform.position, LERP_SPEED);
-        transform.rotation = Quaternion.Lerp(transform.rotation, _real.transform.rotation, LERP_SPEED);
+            transform.position = Vector3.Lerp(transform.position, _real.transform.position, LERP_SPEED);
+            transform.rotation = Quaternion.Lerp(transform.rotation, _real.transform.rotation, LERP_SPEED);
+        }
     }
 
     private bool TryRotate(Vector3 eulerRotation)
@@ -140,16 +153,16 @@ public class Group : MonoBehaviour
 
     private void UpdateGrid()
     {
-        for (int x = 0; x < Grid.length; x++)
-            for (int y = 0; y < Grid.height; y++)
-                for (int z = 0; z < Grid.width; z++)
-                    if (Grid.grid[x, z, y] != null && Grid.grid[x, z, y].transform.parent == _real.transform)
-                        Grid.grid[x, z, y] = null;
+        for (int x = 0; x < Stack.length; x++)
+            for (int y = 0; y < Stack.height; y++)
+                for (int z = 0; z < Stack.width; z++)
+                    if (Stack.grid[x, z, y] != null && Stack.grid[x, z, y].transform.parent == _real.transform)
+                        Stack.grid[x, z, y] = null;
 
         foreach (Transform child in _real.transform)
         {
-            Vector3 v = Grid.RoundVec3(child.position);
-            Grid.grid[(int)v.x, (int)v.z, (int)v.y] = child.gameObject.GetComponent<CubeReal>();
+            Vector3 v = Stack.RoundVec3(child.position);
+            Stack.grid[(int)v.x, (int)v.z, (int)v.y] = child.gameObject.GetComponent<CubeReal>();
         }
     }
 }

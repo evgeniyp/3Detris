@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 
-public class Grid
+public class Stack
 {
     public static int length = 10, width = 10, height = 22; // 2 points above the top
     public static CubeReal[,,] grid = new CubeReal[length, width, height];
@@ -8,6 +8,19 @@ public class Grid
     public static Vector3 RoundVec3(Vector3 v)
     {
         return new Vector3(Mathf.Round(v.x), Mathf.Round(v.y), Mathf.Round(v.z));
+    }
+
+    public static void DeleteFullPlanes()
+    {
+        for (int y = 0; y < height; ++y)
+        {
+            if (IsPlaneFull(y))
+            {
+                DeletePlane(y);
+                DecreasePlanesAbove(y + 1);
+                y--;
+            }
+        }
     }
 
     public static bool InsideBorder(Vector3 pos)
@@ -25,7 +38,7 @@ public class Grid
         for (int x = 0; x < length; ++x)
             for (int z = 0; z < width; z++)
             {
-                Object.Destroy(grid[x, z, y].gameObject);
+                grid[x, z, y].gameObject.GetComponent<CubeReal>().DisplayedCube.FadeToDeath();
                 grid[x, z, y] = null;
             }
     }
@@ -41,7 +54,9 @@ public class Grid
                     grid[x, z, y] = null;
 
                     // Update Block position
-                    grid[x, z, y - 1].transform.position += new Vector3(0, -1, 0);
+                    
+                    grid[x, z, y - 1].transform.position += Vector3.down;
+                    //grid[x, z, y - 1].GetComponent<CubeReal>().DisplayedCube.transform.position += Vector3.down;
                 }
     }
 
