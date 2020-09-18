@@ -2,20 +2,15 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Cube : MonoBehaviour
-{
+public class Cube : MonoBehaviour {
     public GameObject Mirror;
 
-    private void Awake()
-    {
-        
+    private void Awake() {
     }
 
-    void Start()
-    {
+    void Start() {
     }
 
-    void Update()
-    {
+    void Update() {
     }
 }

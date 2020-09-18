@@ -1,7 +1,6 @@
 ﻿using UnityEngine;
 
-public class Group : MonoBehaviour
-{
+public class Group : MonoBehaviour {
     private const float GAME_TICK_SECONDS = 1f;
     private const float LERP_SPEED = 0.2f;
 
@@ -11,8 +10,7 @@ public class Group : MonoBehaviour
 
     private GroupReal _real;
 
-    private void Start()
-    {
+    private void Start() {
         var o = new GameObject();
         o.transform.position = transform.position;
         o.transform.rotation = transform.rotation;
@@ -20,8 +18,7 @@ public class Group : MonoBehaviour
         _real = o.GetComponent<GroupReal>();
         _real.DisplayedGroup = this;
 
-        foreach (Transform child in transform)
-        {
+        foreach (Transform child in transform) {
             var c = new GameObject();
             c.transform.position = child.position;
             c.transform.rotation = child.rotation;
@@ -31,20 +28,16 @@ public class Group : MonoBehaviour
             _realChild.DisplayedCube = child.GetComponent<Cube>();
         }
 
-        if (!IsValidGridPos())
-        {
+        if (!IsValidGridPos()) {
             Debug.Log("GAME OVER");
             Destroy(_real.gameObject);
             Destroy(gameObject);
-        }
-        else
+        } else
             UpdateGrid();
     }
 
-    bool IsValidGridPos()
-    {
-        foreach (Transform child in _real.transform)
-        {
+    bool IsValidGridPos() {
+        foreach (Transform child in _real.transform) {
             Vector3 v = Grid.RoundVec3(child.position);
 
             if (!Grid.InsideBorder(v))
@@ -57,29 +50,20 @@ public class Group : MonoBehaviour
         return true;
     }
 
-    void Update()
-    {
-        if (!_drivenByPlayer)
-        {
-            if (_real.transform.childCount == 0)
-            {
+    void Update() {
+        if (!_drivenByPlayer) {
+            if (_real.transform.childCount == 0) {
                 Destroy(_real.gameObject);
                 Destroy(gameObject);
             }
-        }
-        else
-        {
-            if (Time.time - _lastFall >= GAME_TICK_SECONDS || Input.GetKeyDown(KeyCode.Space))
-            {
-                if (TryMove(new Vector3(0, -1, 0))) { }
-                else
-                {
+        } else {
+            if (Time.time - _lastFall >= GAME_TICK_SECONDS || Input.GetKeyDown(KeyCode.Space)) {
+                if (TryMove(new Vector3(0, -1, 0))) { } else {
                     FindObjectOfType<Spawner>().SpawnNext();
                     _drivenByPlayer = false;
                 }
                 _lastFall = Time.time;
-            }
-            else if (Input.GetKeyDown(KeyCode.LeftArrow) && Input.GetKey(KeyCode.LeftAlt))
+            } else if (Input.GetKeyDown(KeyCode.LeftArrow) && Input.GetKey(KeyCode.LeftAlt))
                 TryRotate(Vector3.forward * 90);
             else if (Input.GetKeyDown(KeyCode.RightArrow) && Input.GetKey(KeyCode.LeftAlt))
                 TryRotate(Vector3.forward * -90);
@@ -95,10 +79,8 @@ public class Group : MonoBehaviour
                 TryMove(Vector3.forward);
             else if (Input.GetKeyDown(KeyCode.UpArrow))
                 TryMove(-Vector3.forward);
-            else if (Input.GetKeyDown(KeyCode.Return))
-            {
-                do
-                { } while (TryMove(new Vector3(0, -1, 0)));
+            else if (Input.GetKeyDown(KeyCode.Return)) {
+                do { } while (TryMove(new Vector3(0, -1, 0)));
                 FindObjectOfType<Spawner>().SpawnNext();
                 _drivenByPlayer = false;
             }
@@ -108,46 +90,36 @@ public class Group : MonoBehaviour
         transform.rotation = Quaternion.Lerp(transform.rotation, _real.transform.rotation, LERP_SPEED);
     }
 
-    private bool TryRotate(Vector3 eulerRotation)
-    {
+    private bool TryRotate(Vector3 eulerRotation) {
         _real.transform.rotation *= Quaternion.Euler(eulerRotation);
-        if (IsValidGridPos())
-        {
+        if (IsValidGridPos()) {
             UpdateGrid();
             return true;
-        }
-        else
-        {
+        } else {
             _real.transform.rotation *= Quaternion.Euler(-eulerRotation);
             return false;
         }
     }
 
-    private bool TryMove(Vector3 deltaPosition)
-    {
+    private bool TryMove(Vector3 deltaPosition) {
         _real.transform.position += deltaPosition;
-        if (IsValidGridPos())
-        {
+        if (IsValidGridPos()) {
             UpdateGrid();
             return true;
-        }
-        else
-        {
+        } else {
             _real.transform.position += -deltaPosition;
             return false;
         }
     }
 
-    private void UpdateGrid()
-    {
+    private void UpdateGrid() {
         for (int x = 0; x < Grid.length; x++)
             for (int y = 0; y < Grid.height; y++)
                 for (int z = 0; z < Grid.width; z++)
                     if (Grid.grid[x, z, y] != null && Grid.grid[x, z, y].transform.parent == _real.transform)
                         Grid.grid[x, z, y] = null;
 
-        foreach (Transform child in _real.transform)
-        {
+        foreach (Transform child in _real.transform) {
             Vector3 v = Grid.RoundVec3(child.position);
             Grid.grid[(int)v.x, (int)v.z, (int)v.y] = child.gameObject.GetComponent<CubeReal>();
         }

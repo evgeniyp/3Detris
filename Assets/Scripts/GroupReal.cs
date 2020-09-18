@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GroupReal : MonoBehaviour
-{
+public class GroupReal : MonoBehaviour {
     public Group DisplayedGroup;
 }
